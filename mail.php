@@ -8,6 +8,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// ── Honeypot: bots fill this, humans don't see it ──
+if (!empty($_POST['website'])) {
+    http_response_code(200);
+    echo json_encode(['success' => true]); // silent reject — don't tell bots they failed
+    exit;
+}
+
+// ── Timing check: reject if submitted in under 5 seconds (bot behaviour) ──
+$form_time = intval($_POST['form_time'] ?? 0);
+if ($form_time === 0 || (time() - $form_time) < 5) {
+    http_response_code(200);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 // Sanitise inputs
 $name    = strip_tags(trim($_POST['name']    ?? ''));
 $phone   = strip_tags(trim($_POST['phone']   ?? ''));
@@ -19,6 +34,14 @@ $message = strip_tags(trim($_POST['message'] ?? ''));
 if (empty($name) || empty($phone)) {
     http_response_code(400);
     echo json_encode(['error' => 'Name and phone are required']);
+    exit;
+}
+
+// ── Content filter: reject messages containing URLs ──
+$url_pattern = '/https?:\/\/|www\.|\.com|\.net|\.org|\.info/i';
+if (preg_match($url_pattern, $message) || preg_match($url_pattern, $name)) {
+    http_response_code(200);
+    echo json_encode(['success' => true]);
     exit;
 }
 

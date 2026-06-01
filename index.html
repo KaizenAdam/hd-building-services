@@ -683,6 +683,14 @@
               method="POST"
               novalidate>
 
+          <!-- Honeypot: hidden from humans, bots fill it -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="website">Leave this blank</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+          <!-- Timestamp set by JS on page load -->
+          <input type="hidden" id="form_time" name="form_time" value="" />
+
           <div class="form-row">
             <div class="form-group">
               <label for="name">Full Name *</label>

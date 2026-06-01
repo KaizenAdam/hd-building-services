@@ -550,6 +550,17 @@ section    { padding: 5rem 0; }
 .hours-row + .hours-row { border-top: 1px solid var(--border); }
 .hours-row span:last-child { color: var(--accent); font-weight: 600; }
 
+/* Honeypot — visually hidden, must not use display:none (some bots check) */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Form */
 .contact-form-wrapper {
   background: #fff;

@@ -100,6 +100,11 @@ const statsBar = document.querySelector('.stats-bar');
 if (statsBar) statsObserver.observe(statsBar);
 
 
+/* ── Spam: set form load timestamp (used by mail.php timing check) ── */
+const formTimeField = document.getElementById('form_time');
+if (formTimeField) formTimeField.value = Math.floor(Date.now() / 1000);
+
+
 /* ── Contact form (PHP mailer → mail.php) ── */
 const contactForm = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
