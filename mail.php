@@ -29,6 +29,7 @@ $phone   = strip_tags(trim($_POST['phone']   ?? ''));
 $email   = strip_tags(trim($_POST['email']   ?? ''));
 $service = strip_tags(trim($_POST['service'] ?? ''));
 $message = strip_tags(trim($_POST['message'] ?? ''));
+$source  = strip_tags(trim($_POST['source']  ?? 'Homepage'));
 
 // Basic validation
 if (empty($name) || empty($phone)) {
@@ -52,7 +53,8 @@ $body  = "You have a new quote request from your website.\n\n";
 $body .= "Name:    $name\n";
 $body .= "Phone:   $phone\n";
 $body .= "Email:   $email\n";
-$body .= "Service: $service\n\n";
+$body .= "Service: $service\n";
+$body .= "Enquiry from: $source\n\n";
 $body .= "Message:\n$message\n";
 
 $headers  = "From: website@hdbuildingservices.co.uk\r\n";

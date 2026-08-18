@@ -3,31 +3,35 @@
    ================================================================ */
 
 /* ── Copyright year ── */
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 
 /* ── Mobile nav ── */
 const hamburger   = document.getElementById('hamburger');
 const mobileMenu  = document.getElementById('mobile-menu');
 
-hamburger.addEventListener('click', () => {
-  const isOpen = mobileMenu.classList.toggle('open');
-  hamburger.classList.toggle('active', isOpen);
-  hamburger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-});
+if (hamburger && mobileMenu) {
+  hamburger.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('active', isOpen);
+    hamburger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+      closeMobileMenu();
+    }
+  });
+}
 
 function closeMobileMenu() {
+  if (!hamburger || !mobileMenu) return;
   mobileMenu.classList.remove('open');
   hamburger.classList.remove('active');
   hamburger.setAttribute('aria-label', 'Open menu');
 }
-
-// Close menu when clicking outside
-document.addEventListener('click', (e) => {
-  if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
-    closeMobileMenu();
-  }
-});
 
 
 /* ── Active nav link on scroll ── */
@@ -169,6 +173,9 @@ const lightboxNext  = document.getElementById('lightbox-next');
 const galleryImgs = [...document.querySelectorAll('.gallery-item img')];
 let currentIdx = 0;
 
+// Service pages have no gallery — skip the lightbox entirely.
+const hasLightbox = lightbox && lightboxImg && galleryImgs.length > 0;
+
 function openLightbox(index) {
   currentIdx = index;
   lightboxImg.src = galleryImgs[index].src;
@@ -188,26 +195,29 @@ function lightboxStep(dir) {
   lightboxImg.alt = galleryImgs[currentIdx].alt;
 }
 
-galleryImgs.forEach((img, i) => {
-  img.closest('.gallery-item').addEventListener('click', () => openLightbox(i));
-});
+if (hasLightbox) {
+  galleryImgs.forEach((img, i) => {
+    img.closest('.gallery-item').addEventListener('click', () => openLightbox(i));
+  });
 
-lightboxClose.addEventListener('click', closeLightbox);
-lightboxPrev.addEventListener('click', () => lightboxStep(-1));
-lightboxNext.addEventListener('click', () => lightboxStep(1));
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', (e) => {
-  if (!lightbox.classList.contains('open')) return;
-  if (e.key === 'Escape')      closeLightbox();
-  if (e.key === 'ArrowLeft')   lightboxStep(-1);
-  if (e.key === 'ArrowRight')  lightboxStep(1);
-});
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxPrev)  lightboxPrev.addEventListener('click', () => lightboxStep(-1));
+  if (lightboxNext)  lightboxNext.addEventListener('click', () => lightboxStep(1));
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft')   lightboxStep(-1);
+    if (e.key === 'ArrowRight')  lightboxStep(1);
+  });
+}
 
 
 /* ── Smooth scroll with header offset ── */
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener('click', (e) => {
     const targetId = anchor.getAttribute('href').slice(1);
+    if (!targetId) return;                       // bare "#" links
     const target   = document.getElementById(targetId);
     if (!target) return;
     e.preventDefault();
@@ -215,4 +225,49 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     const top    = target.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({ top, behavior: 'smooth' });
   });
+});
+
+
+/* ── FAQ accordion (service pages) ──
+   Answers stay in the DOM and are readable with JS off — we only
+   collapse them once JS confirms the accordion is wired up.        */
+const faqItems = document.querySelectorAll('.faq-item');
+
+faqItems.forEach((item) => {
+  const question = item.querySelector('.faq-question');
+  const answer   = item.querySelector('.faq-answer');
+  if (!question || !answer) return;
+
+  question.setAttribute('aria-expanded', 'false');
+
+  question.addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+
+    // Close the others — one open at a time
+    faqItems.forEach((other) => {
+      if (other === item) return;
+      other.classList.remove('open');
+      const oa = other.querySelector('.faq-answer');
+      const oq = other.querySelector('.faq-question');
+      if (oa) oa.style.maxHeight = null;
+      if (oq) oq.setAttribute('aria-expanded', 'false');
+    });
+
+    item.classList.toggle('open', !isOpen);
+    question.setAttribute('aria-expanded', String(!isOpen));
+    answer.style.maxHeight = isOpen ? null : answer.scrollHeight + 'px';
+  });
+});
+
+// Keep an open answer the right height if the window is resized
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.faq-item.open .faq-answer').forEach((a) => {
+    a.style.maxHeight = a.scrollHeight + 'px';
+  });
+});
+
+
+/* ── Mobile menu: close on any link that leaves the page ── */
+document.querySelectorAll('.mobile-menu a[href]').forEach((a) => {
+  a.addEventListener('click', closeMobileMenu);
 });
